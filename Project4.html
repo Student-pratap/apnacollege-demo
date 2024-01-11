@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Life Timer</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;500;600;700&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html,
+body {
+  font-family: "Oswald", sans-serif;
+}
+
+.background {
+  background-image: url("/home/shivpratap/mountain.jpg");
+  height: 100vh;
+  width: 100%;
+  background-size: cover;
+
+  background-repeat: no-repeat;
+}
+.container {
+  display: grid;
+  place-items: center;
+  height: 100vh;
+}
+.container h1 {
+  font-size: 4rem;
+}
+
+.settings {
+  position: absolute;
+  bottom: 30px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.settings .fa-cog {
+  font-size: 3rem;
+  color: white;
+}
+.settings-content {
+  display: flex;
+  gap: 1rem;
+}
+.settings-content input {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+}
+.settings-content button {
+  padding: 0.5rem 1rem;
+  background-color: green;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  color: white;
+}
+.hide {
+  display: none;
+}
+
+.time-container {
+  margin-top: 1rem;
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  align-items: center;
+}
+.time-container h2 {
+  line-height: 60px;
+  text-align: center;
+  font-size: 3rem;
+}
+.time-container div {
+  font-size: 4rem;
+  color: white;
+}
+  </style>
+  <script src="https://kit.fontawesome.com/7a4b62b0a4.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <div class="background">
+    <div id="initialText" class="container">
+      <h1>Kindly Enter Your Date Of Birth</h1>
+    </div>
+    <div id="afterDOBBtnTxt" class="container">
+      <div class="center">
+        <h1>How Much Life Journey Covered,Till Now</h1>
+        <div class="time-container">
+          <h2>
+            <div id="year">0</div>
+            Years
+          </h2>
+          <h2>
+            <div id="month">0</div>
+            Months
+          </h2>
+          <h2>
+            <div id="day">0</div>
+            Days
+          </h2>
+          <h2>
+            <div id="hour">0</div>
+            Hours
+          </h2>
+          <h2>
+            <div id="minute">0</div>
+            Minutes
+          </h2>
+          <h2>
+            <div id="second">0</div>
+            Second
+          </h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings">
+      <i id="settingIcon" class="fa fa-cog"></i>
+      <div id="settingContent" class="settings-content hide">
+        <input type="date" id="dobInput" />
+        <button id="dobButton">Add DOB</button>
+      </div>
+    </div>
+  </div>
+ <script>
+  let isDOBOpen = false;
+let dateOfBirth;
+const settingCogEl = document.getElementById("settingIcon");
+const settingContentEl = document.getElementById("settingContent");
+const initialTextEl = document.getElementById("initialText");
+const afterDOBBtnTxtEl = document.getElementById("afterDOBBtnTxt");
+const dobButtonEl = document.getElementById("dobButton");
+const dobInputEl = document.getElementById("dobInput");
+
+const yearEl = document.getElementById("year");
+const monthEl = document.getElementById("month");
+const dayEl = document.getElementById("day");
+const hourEl = document.getElementById("hour");
+const minuteEl = document.getElementById("minute");
+const secondEl = document.getElementById("second");
+
+console.log(localStorage.getItem("year"));
+
+const makeTwoDigitNumber = (number) => {
+
+  return number > 9 ? number : `0${number}`;
+};
+
+
+const toggleDateOfBirthSelector = () => {
+  if (isDOBOpen) {
+    settingContentEl.classList.add("hide");
+    // updateAge();
+  } else {
+    settingContentEl.classList.remove("hide");
+  }
+  isDOBOpen = !isDOBOpen;
+
+  console.log("Toggle", isDOBOpen);
+};
+const updateAge = () => {
+  const currentDate = new Date();
+  const dateDiff = currentDate - dateOfBirth;
+  const year = Math.floor(dateDiff / (1000 * 60 * 60 * 24 * 365));
+  const month = Math.floor(dateDiff / (1000 * 60 * 60 * 24 * 365) % 12);
+  const day = Math.floor(dateDiff / (1000 * 60 * 60 * 24)) % 30;
+  const hour = Math.floor(dateDiff / (1000 * 60 * 60)) % 24;
+  const minute = Math.floor(dateDiff / (1000 * 60)) % 60;
+  const second = Math.floor(dateDiff / 1000) % 60;
+
+  yearEl.innerHTML = makeTwoDigitNumber(year);
+  monthEl.innerHTML = makeTwoDigitNumber(month);
+  dayEl.innerHTML = makeTwoDigitNumber(day);
+  hourEl.innerHTML = makeTwoDigitNumber(hour);
+  minuteEl.innerHTML = makeTwoDigitNumber(minute);
+  secondEl.innerHTML = makeTwoDigitNumber(second);
+};
+const localStorageGetter = () => {
+  const year = localStorage.getItem("year");
+  const month = localStorage.getItem("month");
+  const date = localStorage.getItem("date");
+  const hour = localStorage.getItem("hour");
+  const minute = localStorage.getItem("minute");
+  const second = localStorage.getItem("second");
+
+  if (year && month && date && hour && minute && second) {
+    dateOfBirth = new Date(year, month, date, hour, minute, second);
+  }
+
+  updateAge();
+
+};
+
+const contentToggler = () => {
+  updateAge();
+  if (dateOfBirth) {
+    initialTextEl.classList.add("hide");
+    afterDOBBtnTxtEl.classList.remove("hide");
+    setInterval(() => updateAge(), 1000);
+  } else {
+    afterDOBBtnTxtEl.classList.add("hide");
+    initialTextEl.classList.remove("hide");
+  }
+}
+
+
+const setDOBHandler = () => {
+  const dateString = dobInputEl.value;
+
+  dateOfBirth = dateString ? new Date(dateString) : null;
+
+
+  if (dateOfBirth) {
+    localStorage.setItem("year", dateOfBirth.getFullYear());
+    localStorage.setItem("month", dateOfBirth.getMonth());
+    localStorage.setItem("date", dateOfBirth.getDate());
+    // localStorage.setItem("hour", dateOfBirth.getHour());
+    // localStorage.setItem("minute", dateOfBirth.getMinute());
+    // localStorage.setItem("second", dateOfBirth.getSecond());
+  }
+  setInterval(() => updateAge(), 1000);
+  contentToggler();
+};
+localStorageGetter();
+contentToggler();
+
+settingCogEl.addEventListener("click", toggleDateOfBirthSelector);
+dobButtonEl.addEventListener("click", setDOBHandler);
+ </script>
+</body>
+
+</html>
