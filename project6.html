@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Tracker</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700&display=swap");
+:root {
+  --primary: #3a3a3a;
+  --primary-dark: #302d2d;
+  --green: #008104;
+  --red: #ff0000;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background-color: var(--primary);
+}
+
+.container {
+  display: grid;
+  place-items: center;
+  height: 120vh;
+}
+
+.box {
+  background-color: white;
+  width: 450px;
+  height: 850px;
+  padding: 20px;
+  background-color: var(--primary-dark);
+  color: white;
+  position: absolute;
+}
+p {
+  font-size: 14px;
+}
+h1 {
+  font-weight: 500;
+  font-size: 32px;
+}
+h2 {
+  font-weight: 400;
+  font-size: 24px;
+}
+h3 {
+  font-weight: 400;
+  font-size: 20px;
+}
+
+.box_upper,
+.balance {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.balance {
+  margin-top: 20px;
+}
+
+.transaction_container {
+  margin-top: 20px;
+}
+
+.transactions {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.transaction {
+  background-color: white;
+  color: black;
+  display: flex;
+  flex-direction: column;
+}
+.transaction .left {
+  padding: 7px;
+  flex-grow: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.content {
+  display: flex;
+}
+.lower {
+  padding: 10px;
+  gap: 10px;
+  display: none;
+}
+.lower img {
+  height: 20px;
+}
+.showTransaction {
+  display: flex;
+}
+.status {
+  display: grid;
+  place-items: center;
+  color: white;
+  min-height: 40px;
+  min-width: 40px;
+}
+.credit {
+  background-color: var(--green);
+}
+.debit {
+  background-color: var(--red);
+}
+
+.transaction_form {
+  background-color: white;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  color: black;
+  padding: 20px;
+}
+.transaction_form h3 {
+  margin-bottom: 10px;
+}
+
+.form_control {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.form_control:first-child {
+  flex: 2;
+}
+.inputs {
+  display: flex;
+  gap: 10px;
+}
+form input {
+  padding: 10px 15px;
+  outline: 1px solid transparent;
+  border: 1px solid black;
+  width: 100%;
+}
+form input:focus-visible {
+  outline: 1px solid var(--primary-dark);
+  border: 1px solid var(--primary-dark);
+}
+
+.buttons_container {
+  display: flex;
+  margin-top: 10px;
+}
+.buttons_container button {
+  width: 100%;
+  height: 45px;
+  color: white;
+  border: none;
+  opacity: 0.9;
+  transition: 0.3s ease-in-out;
+  cursor: pointer;
+}
+.buttons_container button:hover {
+  opacity: 1;
+  transition: 0.3s ease-in-out;
+}
+
+#earnBtn {
+  background-color: var(--green);
+}
+#expBtn {
+  background-color: var(--red);
+}
+
+@media (max-width: 500px) {
+  .box {
+    width: 95%;
+  }
+}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="box">
+        <section class="box_upper">
+          <h1>Expense Tracker</h1>
+
+          <div class="balance">
+            <h2 id="netAmount">₹0</h2>
+            <h3>Your Balance</h3>
+          </div>
+        </section>
+
+        <div class="transaction_container">
+          <h3>Transactions</h3>
+          <hr />
+
+          <div class="transactions">
+        
+          </div>
+        </div>
+        <section class="transaction_form">
+          <h3>Add Transactions</h3>
+          <form id="transactionForm">
+            <div class="inputs">
+              <div class="form_control">
+                <label for="text">Text</label>
+                <input
+                  placeholder="Enter Description"
+                  type="text"
+                  name="text"
+                  id="text"
+                />
+              </div>
+              <div class="form_control">
+                <label for="amount">Amount</label>
+                <input
+                  placeholder="Enter Amount"
+                  type="number"
+                  name="amount"
+                  id="amount"
+                />
+              </div>
+            </div>
+
+            <div class="buttons_container">
+              <button type="submit" id="earnBtn">
+                <p id="earning">₹0</p>
+                <p>Earnings</p>
+              </button>
+              <button type="submit" id="expBtn">
+                <p id="expense">₹0</p>
+                <p>Expense</p>
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
+      <script>
+        const state = {
+    earnings: 0,
+    expense: 0,
+    net: 0,
+    transactions: [],
+  };
+  
+  let isUpdate = false;
+  let tid;
+  
+  const transactionFormEl = document.getElementById("transactionForm");
+  
+  const renderTransactions = () => {
+    const transactionContainerEl = document.querySelector(".transactions");
+    const netAmountEl = document.getElementById("netAmount");
+    const earningEl = document.getElementById("earning");
+    const expenseEl = document.getElementById("expense");
+  
+    const transactions = state.transactions;
+  
+    let earning = 0;
+    let expense = 0;
+    let net = 0;
+    transactionContainerEl.innerHTML = "";
+    transactions.forEach((transaction) => {
+      const { id, amount, text, type } = transaction;
+      const isCredit = type === "credit" ? true : false;
+      const sign = isCredit ? "+" : "-";
+  
+      const transactionEl = `
+       <div class="transaction" id="${id}">
+          <div class="content" onclick="showEdit(${id})">
+              <div class="left" >
+              <p>${text}</p>
+              <p>${sign} ₹ ${amount}</p>
+          </div>
+              <div class="status ${isCredit ? "credit" : "debit"}">${
+        isCredit ? "C" : "D"
+      }</div>
+          </div>
+          <div class="lower">
+          <div class="icon" onclick="handleUpdate(${id})">
+              <img src="./icons/pen.svg" alt="pen" />
+          </div>
+          <div class="icon" onclick="handleDelete(${id})">
+              <img src="./icons/trash.svg" alt="trash" />
+          </div>
+          </div>
+    </div>`;
+      earning += isCredit ? amount : 0;
+      expense += !isCredit ? amount : 0;
+      net = earning - expense;
+  
+      transactionContainerEl.insertAdjacentHTML("afterbegin", transactionEl);
+    });
+  
+    console.log({ net, earning, expense });
+  
+    netAmountEl.innerHTML = `₹ ${net}`;
+    earningEl.innerHTML = `₹ ${earning}`;
+    expenseEl.innerHTML = `₹ ${expense}`;
+  };
+  
+  const addTransaction = (e) => {
+    e.preventDefault();
+  
+    const isEarn = e.submitter.id === "earnBtn" ? true : false;
+  
+    const formData = new FormData(transactionFormEl);
+    const tData = {};
+  
+    formData.forEach((value, key) => {
+      tData[key] = value;
+    });
+    const { text, amount } = tData;
+    const transaction = {
+      id: isUpdate ? tid : Math.floor(Math.random() * 1000),
+      text: text,
+      amount: +amount,
+      type: isEarn ? "credit" : "debit",
+    };
+  
+    if (isUpdate) {
+      const tIndex = state.transactions.findIndex((t) => t.id === tid);
+  
+      state.transactions[tIndex] = transaction;
+      isUpdate = false;
+      tid = null;
+    } else {
+      state.transactions.push(transaction);
+    }
+  
+    renderTransactions();
+  
+    transactionFormEl.reset();
+    console.log({ state });
+  };
+  
+  const showEdit = (id) => {
+    console.log("id", id);
+  
+    const selectedTransaction = document.getElementById(id);
+    const lowerEl = selectedTransaction.querySelector(".lower");
+  
+    lowerEl.classList.toggle("showTransaction");
+  };
+  
+  const handleUpdate = (id) => {
+    const transaction = state.transactions.find((t) => t.id === id);
+  
+    const { text, amount } = transaction;
+    const textInput = document.getElementById("text");
+    const amountInput = document.getElementById("amount");
+    textInput.value = text;
+    amountInput.value = amount;
+    tid = id;
+    isUpdate = true;
+  };
+  
+  const handleDelete = (id) => {
+    const filteredTransaction = state.transactions.filter((t) => t.id !== id);
+  
+    state.transactions = filteredTransaction;
+    renderTransactions();
+  };
+  
+  renderTransactions();
+  transactionFormEl.addEventListener("submit", addTransaction);
+      </script>
+    </div>
+  </body>
+</html>
